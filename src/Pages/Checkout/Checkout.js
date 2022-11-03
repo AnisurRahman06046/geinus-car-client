@@ -23,6 +23,22 @@ const Checkout = () => {
       phone,
       message,
     };
+    fetch("http://localhost:5000/orders", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(order),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.acknowledged) {
+          alert("order placed");
+          form.reset();
+        }
+        console.log(data);
+      })
+      .catch((error) => console.error(error));
   };
   return (
     <form onSubmit={handlePlaceOrder}>
@@ -46,6 +62,7 @@ const Checkout = () => {
           type="text"
           placeholder="Your Phone"
           className="input w-full input-bordered "
+          required
         />
         <input
           name="email"
