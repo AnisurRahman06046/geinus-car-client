@@ -1,43 +1,49 @@
-import React from 'react';
-import { createContext } from 'react';
-import {createUserWithEmailAndPassword, getAuth, onAuthStateChanged} from 'firebase/auth';
-import app from '../../firebase/firebase.config';
-import { useState } from 'react';
-import { useEffect } from 'react';
+import React from "react";
+import { createContext } from "react";
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import app from "../../firebase/firebase.config";
+import { useState } from "react";
+import { useEffect } from "react";
 
 export const AuthContext = createContext();
 const auth = getAuth(app);
 
-const AuthProvider = ({children}) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    const createUser = (email, password) => {
-        return createUserWithEmailAndPassword(auth, email, password);
-    }
+  const createUser = (email, password) => {
+    return createUserWithEmailAndPassword(auth, email, password);
+  };
+  const logIn = (password, email) => {
+    return signInWithEmailAndPassword(auth, password, email);
+  };
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      console.log(currentUser);
+      setUser(currentUser);
+    });
 
-    useEffect( () =>{
-        const unsubscribe = onAuthStateChanged(auth, currentUser =>{
-            console.log(currentUser);
-            setUser(currentUser);
-        });
+    return () => {
+      return unsubscribe();
+    };
+  }, []);
 
-        return () =>{
-            return unsubscribe();
-        }
-    }, [])
+  const authInfo = {
+    user,
+    loading,
+    createUser,
+    logIn,
+  };
 
-    const authInfo = {
-        user, 
-        loading,
-        createUser
-    }
-
-    return (
-        <AuthContext.Provider value={authInfo}>
-            {children}
-        </AuthContext.Provider>
-    );
+  return (
+    <AuthContext.Provider value={authInfo}>{children}</AuthContext.Provider>
+  );
 };
 
 export default AuthProvider;
